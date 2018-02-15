@@ -1,0 +1,112 @@
+<!doctype html>
+<html ng-app>
+<head>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+   <title>Github API Webapp using AngularJS - Not So Clever Demo</title>
+   <style>
+   body{font-size:20px;background-color:#ecede8;}
+   #wrapper{width:80%;height: 100vh;margin:0px auto 0;}
+   #wrapper div h1,input,a{text-align:center;}
+   #header-title{color:#FFf;background-color:#4682B4;padding:20px;}
+   #mytable{margin:0px auto 0; background-color:#FAEBD7;height:200px;padding:20px;border:3px solid #ddd;}
+   #mytable tr{padding:10px;}
+   #mytable tr td{padding:10px;}
+   #ghusername{padding:10px;text-align:left;}
+   #ghsubmitbtn{padding:10px;background-color:#20B2AA;color:#fff;margin:0px auto;align:center;}
+   #ghsubmitbtn:hover{background-color:#F4A460;color:fff;}
+   #user-details{background-color:#F5F5F5;height:100%;padding:20px;border:3px solid #ddd;}
+   #userNotFound h2{color:#FFF;background-color:#999;padding:10px;}
+   #user-name{color:#FFF;background-color:#4682B4;padding:20px;}
+   #user-name a{color:#FFF;}
+   #ghcontent div a img{border:2px solid #999;margin-top:30px;}
+   .user-data{font-size:16px;padding:10px;background-color:#ddd;border:1px solid #fcfcfc;border-radius:10px;margin:30px 0 0 0;}
+   .user-data:hover{background-color:#F4A460;color:fff;}
+   #profile-btn{margin-top:30px;}
+   #profile-btn a{text-decoration:none;padding:10px;background-color:#20B2AA;color:#fff;align:center;}
+   #profile-btn a:hover{background-color:#F4A460;color:fff;}
+   .repolist div p{color:#FFF;background-color:#4682B4;padding:5px;width:160px;}
+   .repolist ul li{list-style:none;background-color:#F4A460;padding:5px;border:1px solid #fcfcfc;border-radius:10px;float:left;margin:10px 0 10px 0;}
+   .repolist ul li a{color:#fff;text-decoration:none;}
+   .repolist ul li:hover{background-color:#999;}
+   </style>
+</head>
+
+<body ng-controller="GitHubCtrl">
+
+<div id="wrapper">
+   <div>
+      <h1 id="header-title">Github Search API</h1>
+      <table id="mytable">
+	  <tr>
+	  <td><p>Enter a Github User Name:</p></td>
+      <td><input type="text" id="ghusername" ng-model="username" placeholder="Github username..."></td>
+	  </tr>
+	  <tr>
+	  <td colspan="2" align="center"><button id="ghsubmitbtn" ng-click="getGitInfo()">Search User</button></td>
+	  </tr>
+</table>
+   </div>
+   <div id="user-details">
+   <div ng-show="userNotFound" id="userNotFound">
+      <h2>No User Info Found</h2>
+   </div>
+   <div ng-show="loaded">
+
+      <h2 id="user-name"> {{user.name}}
+         <span>(@<a href="{{user.html_url}}" target="_blank"> {{user.login}} </a>)</span>
+      </h2>
+	  
+
+      <div id="ghcontent">
+         <div>
+            <a href="{{ user.html_url }}" target="_blank">
+               <img src="{{ user.avatar_url }}" width="80" height="80" alt="{{ user.login }}"></a>
+         </div>
+        <p> 
+		<span class="user-data">Followers: {{ user.followers }}</span> 
+		<span class="user-data">Following: {{ user.following }}</span> 
+		<span class="user-data">Repos: {{ user.public_repos }}</span>
+		</p>
+		<div id="profile-btn">
+		<a href="{{user.html_url}}" target="_blank" id="profile-btn">Visit Profile on GitHub</a>
+		</div>
+      </div>
+      <div class="repolist">
+         <p ng-hide="reposFound">No repos!</p>
+
+         <div ng-show="reposFound">
+            <p><strong>Repositories List:</strong></p>
+            <ul ng-repeat="repo in repos">
+               <li><a href="{{repo.html_url}}" target="_blank"> {{repo.name}} </a></li>
+            </ul>
+         </div>
+      </div>
+   </div>
+   </div>
+</div>
+
+
+<script>
+   function GitHubCtrl($scope, $http) {
+      $scope.getGitInfo = function () {
+         $scope.userNotFound = false;
+         $scope.loaded = false;
+         $http.get("https://api.github.com/users/" + $scope.username)
+               .success(function (data) {
+                  if (data.name == "") data.name = data.login;
+                  $scope.user = data;
+                  $scope.loaded = true;
+               })
+               .error(function () {
+                  $scope.userNotFound = true;
+               });
+         $http.get("https://api.github.com/users/" + $scope.username + "/repos").success(function (data) {
+            $scope.repos = data;
+            $scope.reposFound = data.length > 0;
+         });
+      }
+   }
+</script>
+
+</body>
+</html>
